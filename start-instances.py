@@ -11,19 +11,62 @@ def list_instances(compute, project, zone):
     return result['items'] if 'items' in result else None
 # [END list_instances]
 
+# [START get_instance]
+def get_instance(compute, project, zone, instance_name):
+    result = compute.instances().get(project=project, zone=zone, instance=instance_name).execute()
+    return result
+# [END get_instance]
+
+
+# [START start_instance]
+#def start_instances(project, zone, name):
+   # result = compute.instances().start(project=project, zone=zone, instance=name).execute()
+    # return result['items'] if 'items' in result else None
+# [END start_instance]
+
+# [START wait_for_operation]
+def wait_for_operation(compute, project, zone, operation):
+    print('Waiting for operation to finish...')
+    while True:
+        result = compute.zoneOperations().get(
+            project=project,
+            zone=zone,
+            operation=operation).execute()
+
+        if result['status'] == 'DONE':
+            print("done.")
+            if 'error' in result:
+                raise Exception(result['error'])
+            return result
+
+        time.sleep(1)
+# [END wait_for_operation]
+
+
 # [START run]
 def main(project, zone, instance_name, wait=True):
     credentials = GoogleCredentials.get_application_default()
     compute = discovery.build('compute', 'v1', credentials=credentials)
 
-    instances = list_instances(compute, project, zone)
+    instance = get_instance(compute, project, zone, instance_name)
+   
 
-    print('Starting Instance %s in project %s and zone %s:' % (instance_name, project, zone))
+    print('Trying to start Instance %s in project %s and zone %s:' % (instance_name, project, zone))
+    
+    ip = instance['networkInterfaces'][0]['accessConfigs'][0]['natIP'])
+    print(ip)
 
-    for instance in instances:
-        if instance['name'] == instance_name:
-            print(' - IP Adress of ' + instance['name'] + ' \n')
-            print(instance['networkInterfaces'][0]['accessConfigs'][0]['natIP'])
+
+    #for instance in instances:
+    #   if instance['name'] == instance_name:
+     #           if instance['status'] == 'RUNNING':
+      #              print('Instance already started - The IP Adress is ' + instance['name'] + ' \n')
+       #             ip = instance['networkInterfaces'][0]['accessConfigs'][0]['natIP'])
+        #            print(ip)
+         #       else:
+          #          print('Starting the instance - please wait a few seconds for the operation to complete')
+           #         operation = start
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
