@@ -5,10 +5,10 @@ import time
 from googleapiclient import discovery
 from oauth2client.client import GoogleCredentials
 
-# [START list_instances]
-def list_instances(compute, project, zone):
-    result = compute.instances().list(project=project, zone=zone).execute()
-    return result['items'] if 'items' in result else None
+# [START list_instances] - keeping this - might be useful later
+#def list_instances(compute, project, zone):
+#    result = compute.instances().list(project=project, zone=zone).execute()
+#    return result['items'] if 'items' in result else None
 # [END list_instances]
 
 # [START get_instance]
@@ -19,9 +19,8 @@ def get_instance(compute, project, zone, instance_name):
 
 
 # [START start_instance]
-#def start_instances(project, zone, name):
-   # result = compute.instances().start(project=project, zone=zone, instance=name).execute()
-    # return result['items'] if 'items' in result else None
+def start_instance(compute, project, zone, instance_name):
+    return compute.instances().start(project=project, zone=zone, instance=instance_name).execute()
 # [END start_instance]
 
 # [START wait_for_operation]
@@ -53,19 +52,18 @@ def main(project, zone, instance_name, wait=True):
 
     print('Trying to start Instance %s in project %s and zone %s:' % (instance_name, project, zone))
     
-    ip = instance['networkInterfaces'][0]['accessConfigs'][0]['natIP'])
-    print(ip)
-
-
-    #for instance in instances:
-    #   if instance['name'] == instance_name:
-     #           if instance['status'] == 'RUNNING':
-      #              print('Instance already started - The IP Adress is ' + instance['name'] + ' \n')
-       #             ip = instance['networkInterfaces'][0]['accessConfigs'][0]['natIP'])
-        #            print(ip)
-         #       else:
-          #          print('Starting the instance - please wait a few seconds for the operation to complete')
-           #         operation = start
+    if instance['status'] == 'RUNNING':
+        print('Instance already started - The IP Adress is ' + instance['name'] + ' \n')
+        ip = instance['networkInterfaces'][0]['accessConfigs'][0]['natIP']
+        print(ip)
+    else:
+        print('**** Starting the instance - please wait a few seconds for the operation to complete ****')
+        operation = start_instance(compute, project, zone, instance_name)
+        wait_for_operation(compute, project, zone, operation['name'])
+        print('Instance is running - Getting IP Adreess')
+        instance = get_instance(compute, project, zone, instance_name)
+        ip = instance['networkInterfaces'][0]['accessConfigs'][0]['natIP']
+        print(ip)
 
 
 if __name__ == '__main__':
