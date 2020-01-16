@@ -24,6 +24,7 @@ def start_instance(compute, project, zone, instance_name):
 # [END start_instance]
 
 # [START wait_for_operation]
+# This function is a little helper. More info: https://cloud.google.com/compute/docs/api/how-tos/api-requests-responses#handling_api_responses
 def wait_for_operation(compute, project, zone, operation):
     print('Waiting for operation to finish...')
     while True:
@@ -44,6 +45,9 @@ def wait_for_operation(compute, project, zone, operation):
 
 # [START run]
 def main(project, zone, instance_name, wait=True):
+    # For authentication, Application Default is used, to hide the service account credientals
+    # See https://cloud.google.com/docs/authentication/production#auth-cloud-implicit-python
+    # Beawre - the service in which this script runs needs permissions in each project you want to start VMs
     credentials = GoogleCredentials.get_application_default()
     compute = discovery.build('compute', 'v1', credentials=credentials)
 
